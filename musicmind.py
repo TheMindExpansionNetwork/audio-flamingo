@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Optional
 
 # Modal deployment endpoint
-MODAL_ENDPOINT = os.getenv("MUSICMIND_ENDPOINT", "https://themindexpansionnetwork--audio-flamingo-music-fastapi-app.modal.run")
+MODAL_ENDPOINT = os.getenv("MUSICMIND_ENDPOINT", "https://m1ndb0t-2045--audio-flamingo-music-fastapi-app.modal.run")
 
 
 class MusicMind:

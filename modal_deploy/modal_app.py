@@ -4,10 +4,6 @@ Music Understanding AI for Parties, Events, and Creative Projects
 """
 
 import modal
-from fastapi import FastAPI, File, UploadFile, Form
-from fastapi.responses import JSONResponse
-import tempfile
-import os
 
 # Modal image with all dependencies
 image = (
@@ -180,50 +176,19 @@ class AudioFlamingoMusic:
         """
         
         return self.analyze_music(audio_path, prompt)
-    
-    @modal.method()
-    def multi_turn_chat(self, audio_paths: list, messages: list) -> dict:
-        """Multi-turn conversation about multiple audio clips"""
-        conversation = []
-        
-        for msg in messages:
-            content = [{"type": "text", "text": msg["text"]}]
-            if "audio_index" in msg and msg["audio_index"] < len(audio_paths):
-                content.append({"type": "audio", "path": audio_paths[msg["audio_index"]]})
-            
-            conversation.append({
-                "role": msg.get("role", "user"),
-                "content": content,
-            })
-        
-        inputs = self.processor.apply_chat_template(
-            conversation,
-            tokenize=True,
-            add_generation_prompt=True,
-            return_dict=True,
-        ).to(self.model.device)
-        
-        outputs = self.model.generate(
-            **inputs,
-            max_new_tokens=512,
-        )
-        
-        response = self.processor.batch_decode(
-            outputs[:, inputs.input_ids.shape[1]:],
-            skip_special_tokens=True,
-        )[0]
-        
-        return {"response": response, "turns": len(conversation)}
 
 
-# FastAPI web endpoint
-web_app = FastAPI(title="Audio Flamingo Music API")
-
-
+# FastAPI web endpoint - imports inside function
 @app.function(volumes={"/cache": cache_vol})
 @modal.asgi_app()
 def fastapi_app():
     """FastAPI app for HTTP requests"""
+    from fastapi import FastAPI, File, UploadFile, Form
+    from fastapi.responses import JSONResponse
+    import tempfile
+    import os
+    
+    web_app = FastAPI(title="Audio Flamingo Music API")
     handler = AudioFlamingoMusic()
     
     @web_app.post("/analyze")
@@ -292,7 +257,7 @@ def main():
     import sys
     
     if len(sys.argv) < 2:
-        print("Usage: modal run modal_deploy.py -- <audio_file> [command]")
+        print("Usage: modal run modal_app.py -- <audio_file> [command]")
         print("Commands: analyze, party-vibe, transcribe, caption")
         sys.exit(1)
     
